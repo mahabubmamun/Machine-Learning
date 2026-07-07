@@ -1,0 +1,664 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "98e6bcca",
+   "metadata": {
+    "_cell_guid": "b1076dfc-b9ad-4769-8c92-a6c4dae69d19",
+    "_uuid": "8f2839f25d086af736a60e9eeb907d3b93b6e0e5",
+    "execution": {
+     "iopub.execute_input": "2026-07-07T14:25:20.473035Z",
+     "iopub.status.busy": "2026-07-07T14:25:20.472606Z",
+     "iopub.status.idle": "2026-07-07T14:25:22.593680Z",
+     "shell.execute_reply": "2026-07-07T14:25:22.592762Z"
+    },
+    "papermill": {
+     "duration": 2.129704,
+     "end_time": "2026-07-07T14:25:22.595968+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:20.466264+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/kaggle/input/competitions/titanic/train.csv\n",
+      "/kaggle/input/competitions/titanic/test.csv\n",
+      "/kaggle/input/competitions/titanic/gender_submission.csv\n"
+     ]
+    }
+   ],
+   "source": [
+    "import numpy as np # linear algebra\n",
+    "import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)\n",
+    "\n",
+    "import os\n",
+    "for dirname, _, filenames in os.walk('/kaggle/input'):\n",
+    "    for filename in filenames:\n",
+    "        print(os.path.join(dirname, filename))\n",
+    "\n",
+    "import kagglehub\n",
+    "# kagglehub.dataset_download('<owner>/<dataset-slug>')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "2d5c5a56",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-07-07T14:25:22.605291Z",
+     "iopub.status.busy": "2026-07-07T14:25:22.604741Z",
+     "iopub.status.idle": "2026-07-07T14:25:22.654543Z",
+     "shell.execute_reply": "2026-07-07T14:25:22.653773Z"
+    },
+    "papermill": {
+     "duration": 0.056947,
+     "end_time": "2026-07-07T14:25:22.656855+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:22.599908+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "train = pd.read_csv('/kaggle/input/competitions/titanic/train.csv').drop(columns = ['Survived'])\n",
+    "test = pd.read_csv('/kaggle/input/competitions/titanic/test.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "774227e2",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-07-07T14:25:22.665570Z",
+     "iopub.status.busy": "2026-07-07T14:25:22.665238Z",
+     "iopub.status.idle": "2026-07-07T14:25:22.671221Z",
+     "shell.execute_reply": "2026-07-07T14:25:22.670278Z"
+    },
+    "papermill": {
+     "duration": 0.012686,
+     "end_time": "2026-07-07T14:25:22.673182+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:22.660496+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "df = pd.concat([train,test])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "c014d32f",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-07-07T14:25:22.681827Z",
+     "iopub.status.busy": "2026-07-07T14:25:22.681457Z",
+     "iopub.status.idle": "2026-07-07T14:25:22.685541Z",
+     "shell.execute_reply": "2026-07-07T14:25:22.684815Z"
+    },
+    "papermill": {
+     "duration": 0.010705,
+     "end_time": "2026-07-07T14:25:22.687365+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:22.676660+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "import math"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "a741c681",
+   "metadata": {
+    "papermill": {
+     "duration": 0.003412,
+     "end_time": "2026-07-07T14:25:22.694396+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:22.690984+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# One sample t-test"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "be34c286",
+   "metadata": {
+    "papermill": {
+     "duration": 0.003423,
+     "end_time": "2026-07-07T14:25:22.701279+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:22.697856+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# Example-1"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "724b0745",
+   "metadata": {
+    "papermill": {
+     "duration": 0.003274,
+     "end_time": "2026-07-07T14:25:22.708016+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:22.704742+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "Suppose a manufacturer claims that the average weight of their new chocolate bars is 50 grams, we highly doubt that and want to check this so we drew out a sample of 25 chocolate bars and measured their weight, the sample mean came out to be 49.7 grams and the sample std deviation was 1.2 grams. Consider the significance level to be 0.05."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "8a5621d4",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-07-07T14:25:22.717592Z",
+     "iopub.status.busy": "2026-07-07T14:25:22.717242Z",
+     "iopub.status.idle": "2026-07-07T14:25:22.723020Z",
+     "shell.execute_reply": "2026-07-07T14:25:22.722066Z"
+    },
+    "papermill": {
+     "duration": 0.013546,
+     "end_time": "2026-07-07T14:25:22.724924+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:22.711378+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "-1.2499999999999882\n"
+     ]
+    }
+   ],
+   "source": [
+    "# H0 -> mean = 50\n",
+    "# H1 -> mean != 50\n",
+    "\n",
+    "pop_mean = 50\n",
+    "sample_mean = 49.7\n",
+    "sample_size = 25\n",
+    "sample_std = 1.2\n",
+    "\n",
+    "t_value = (sample_mean - pop_mean)/(sample_std/math.sqrt(sample_size))\n",
+    "print(t_value)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "fac783da",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-07-07T14:25:22.733651Z",
+     "iopub.status.busy": "2026-07-07T14:25:22.733309Z",
+     "iopub.status.idle": "2026-07-07T14:25:24.267331Z",
+     "shell.execute_reply": "2026-07-07T14:25:24.266108Z"
+    },
+    "papermill": {
+     "duration": 1.540727,
+     "end_time": "2026-07-07T14:25:24.269251+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:22.728524+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0.11167573908281227\n"
+     ]
+    }
+   ],
+   "source": [
+    "from scipy.stats import t\n",
+    "\n",
+    "# t_value = -1.25\n",
+    "degree_of_freedom = sample_size - 1\n",
+    "\n",
+    "# calculate cdf value\n",
+    "cdf_value = t.cdf(t_value, degree_of_freedom)\n",
+    "print(cdf_value)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "99f64532",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-07-07T14:25:24.278828Z",
+     "iopub.status.busy": "2026-07-07T14:25:24.278065Z",
+     "iopub.status.idle": "2026-07-07T14:25:24.283924Z",
+     "shell.execute_reply": "2026-07-07T14:25:24.282956Z"
+    },
+    "papermill": {
+     "duration": 0.012808,
+     "end_time": "2026-07-07T14:25:24.285763+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:24.272955+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "p-value: 0.22335147816562453\n"
+     ]
+    }
+   ],
+   "source": [
+    "test_type = \"two_tilled\"\n",
+    "if test_type == \"two_tilled\":\n",
+    "    p_value = cdf_value*2\n",
+    "    print(f\"p-value: {p_value}\")\n",
+    "else:\n",
+    "    p_vlaue = cdf_value\n",
+    "    print(f\"p-value: {cdf_value}\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "dd7b41a7",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-07-07T14:25:24.294592Z",
+     "iopub.status.busy": "2026-07-07T14:25:24.294258Z",
+     "iopub.status.idle": "2026-07-07T14:25:24.299646Z",
+     "shell.execute_reply": "2026-07-07T14:25:24.298628Z"
+    },
+    "papermill": {
+     "duration": 0.01205,
+     "end_time": "2026-07-07T14:25:24.301480+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:24.289430+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Can't reject Null-Hypothesis\n"
+     ]
+    }
+   ],
+   "source": [
+    "alpha = 0.05 #significance level\n",
+    "if p_value > alpha:\n",
+    "    print(\"Can't reject Null-Hypothesis\")\n",
+    "else:\n",
+    "    print(\"Reject Null-Hypothesis\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "7832f3a4",
+   "metadata": {
+    "papermill": {
+     "duration": 0.003761,
+     "end_time": "2026-07-07T14:25:24.309268+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:24.305507+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# Example-2"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "8a1a4aa2",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-07-07T14:25:24.318412Z",
+     "iopub.status.busy": "2026-07-07T14:25:24.318053Z",
+     "iopub.status.idle": "2026-07-07T14:25:24.323581Z",
+     "shell.execute_reply": "2026-07-07T14:25:24.322557Z"
+    },
+    "papermill": {
+     "duration": 0.012642,
+     "end_time": "2026-07-07T14:25:24.325614+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:24.312972+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# drop missing values\n",
+    "pop = df['Age'].dropna()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "7d823d77",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-07-07T14:25:24.334990Z",
+     "iopub.status.busy": "2026-07-07T14:25:24.334595Z",
+     "iopub.status.idle": "2026-07-07T14:25:24.341952Z",
+     "shell.execute_reply": "2026-07-07T14:25:24.340997Z"
+    },
+    "papermill": {
+     "duration": 0.014424,
+     "end_time": "2026-07-07T14:25:24.343876+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:24.329452+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "np.float64(29.881137667304014)"
+      ]
+     },
+     "execution_count": 10,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "pop.mean()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "2582ff69",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-07-07T14:25:24.353522Z",
+     "iopub.status.busy": "2026-07-07T14:25:24.353173Z",
+     "iopub.status.idle": "2026-07-07T14:25:24.360141Z",
+     "shell.execute_reply": "2026-07-07T14:25:24.359148Z"
+    },
+    "papermill": {
+     "duration": 0.014188,
+     "end_time": "2026-07-07T14:25:24.362119+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:24.347931+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([18., 31., 57., 24., 21., 48., 25., 16., 48., 36., 33., 24., 25.,\n",
+       "       58., 42., 29., 18., 34., 45., 24., 27., 61., 29., 23., 22.])"
+      ]
+     },
+     "execution_count": 11,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "sample_age = pop.sample(25).values\n",
+    "sample_age"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "490d9497",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-07-07T14:25:24.371685Z",
+     "iopub.status.busy": "2026-07-07T14:25:24.371331Z",
+     "iopub.status.idle": "2026-07-07T14:25:24.375348Z",
+     "shell.execute_reply": "2026-07-07T14:25:24.374467Z"
+    },
+    "papermill": {
+     "duration": 0.01121,
+     "end_time": "2026-07-07T14:25:24.377296+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:24.366086+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# H0 -> The mean age is 35\n",
+    "# H1 -> The mean age is less than 35"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "64b76d07",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-07-07T14:25:24.386649Z",
+     "iopub.status.busy": "2026-07-07T14:25:24.386319Z",
+     "iopub.status.idle": "2026-07-07T14:25:24.392919Z",
+     "shell.execute_reply": "2026-07-07T14:25:24.392009Z"
+    },
+    "papermill": {
+     "duration": 0.013519,
+     "end_time": "2026-07-07T14:25:24.394724+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:24.381205+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "ShapiroResult(statistic=np.float64(0.8930082936432067), pvalue=np.float64(0.012962907910897447))\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Check the normality of the sample\n",
+    "from scipy.stats import shapiro\n",
+    "\n",
+    "shapiro_age = shapiro(sample_age)\n",
+    "\n",
+    "print(shapiro_age)\n",
+    "\n",
+    "# if p-value of shapiro test is greater than 0.05, then the sample is normally distributed. Otherwise, they are\n",
+    "# not normally distributed"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "b116c6df",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-07-07T14:25:24.404902Z",
+     "iopub.status.busy": "2026-07-07T14:25:24.404105Z",
+     "iopub.status.idle": "2026-07-07T14:25:24.411614Z",
+     "shell.execute_reply": "2026-07-07T14:25:24.410680Z"
+    },
+    "papermill": {
+     "duration": 0.015565,
+     "end_time": "2026-07-07T14:25:24.414323+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:24.398758+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "t-static:  -0.8602201711118684\n",
+      "p-value:  0.19908983739580993\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/tmp/ipykernel_16/1351208328.py:6: DeprecationWarning: Please import `ttest_1samp` from the `scipy.stats` namespace; the `scipy.stats.stats` namespace is deprecated and will be removed in SciPy 2.0.0.\n",
+      "  t_static, p_value = stats.ttest_1samp(sample_age, pop_mean)\n"
+     ]
+    }
+   ],
+   "source": [
+    "pop_mean = 35\n",
+    "sample_size = 25\n",
+    "\n",
+    "from scipy.stats import stats\n",
+    "\n",
+    "t_static, p_value = stats.ttest_1samp(sample_age, pop_mean)\n",
+    "\n",
+    "print(\"t-static: \", t_static)\n",
+    "print(\"p-value: \", p_value/2)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "54861f29",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-07-07T14:25:24.424787Z",
+     "iopub.status.busy": "2026-07-07T14:25:24.423903Z",
+     "iopub.status.idle": "2026-07-07T14:25:24.429349Z",
+     "shell.execute_reply": "2026-07-07T14:25:24.428267Z"
+    },
+    "papermill": {
+     "duration": 0.012962,
+     "end_time": "2026-07-07T14:25:24.431401+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:24.418439+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Fail to reject the Null-Hypothesis\n"
+     ]
+    }
+   ],
+   "source": [
+    "if p_value/2 < alpha:\n",
+    "    print('Reject the Null-Hypothesis')\n",
+    "else:\n",
+    "    print('Fail to reject the Null-Hypothesis')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "5772d747",
+   "metadata": {
+    "papermill": {
+     "duration": 0.00414,
+     "end_time": "2026-07-07T14:25:24.439987+00:00",
+     "exception": false,
+     "start_time": "2026-07-07T14:25:24.435847+00:00",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kaggle": {
+   "accelerator": "none",
+   "dataSources": [],
+   "dockerImageVersionId": 28755,
+   "isGpuEnabled": false,
+   "isInternetEnabled": false,
+   "language": "python",
+   "sourceType": "notebook"
+  },
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.12.13"
+  },
+  "papermill": {
+   "default_parameters": {},
+   "duration": 7.739922,
+   "end_time": "2026-07-07T14:25:25.064259+00:00",
+   "environment_variables": {},
+   "exception": null,
+   "input_path": "__notebook__.ipynb",
+   "output_path": "__notebook__.ipynb",
+   "parameters": {},
+   "start_time": "2026-07-07T14:25:17.324337+00:00",
+   "version": "2.7.0"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
